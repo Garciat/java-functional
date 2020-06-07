@@ -1,6 +1,7 @@
 package com.garciat.functional.data;
 
 import com.garciat.functional.functions.NullableFunction;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
@@ -97,6 +98,7 @@ public abstract class Either<T, F> {
   // data
 
   @Value
+  @EqualsAndHashCode(callSuper=false)
   private static class Success<T, F> extends Either<T, F> {
 
     @NonNull T t;
@@ -113,6 +115,7 @@ public abstract class Either<T, F> {
   }
 
   @Value
+  @EqualsAndHashCode(callSuper=false)
   private static class Failure<T, F> extends Either<T, F> {
 
     @NonNull F f;

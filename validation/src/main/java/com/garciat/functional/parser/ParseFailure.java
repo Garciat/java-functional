@@ -1,5 +1,6 @@
 package com.garciat.functional.parser;
 
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 public abstract class ParseFailure {
@@ -36,6 +37,7 @@ public abstract class ParseFailure {
   // data
 
   @Value
+  @EqualsAndHashCode(callSuper=false)
   public static class Message extends ParseFailure {
     String message;
 
@@ -46,6 +48,7 @@ public abstract class ParseFailure {
   }
 
   @Value
+  @EqualsAndHashCode(callSuper=false)
   public static class Exception extends ParseFailure {
     Throwable throwable;
 
@@ -60,6 +63,7 @@ public abstract class ParseFailure {
   }
 
   @Value
+  @EqualsAndHashCode(callSuper=false)
   public static class Tag extends ParseFailure {
     String tag;
     ParseFailure sub;
@@ -71,6 +75,7 @@ public abstract class ParseFailure {
   }
 
   @Value
+  @EqualsAndHashCode(callSuper=false)
   public static class Merge extends ParseFailure {
     ParseFailure left;
     ParseFailure right;
