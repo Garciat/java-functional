@@ -46,8 +46,8 @@ public interface Parser<T, R> {
 
   // semantic
 
-  default Parser<T, R> filter(Predicate<R> predicate, String message) {
-    return andThen(predicate(predicate, message));
+  default Parser<T, R> filter(Predicate<R> predicate, String failureMessage) {
+    return andThen(predicate(predicate, failureMessage));
   }
 
   default Parser<T, R> tagged(String tag) {
@@ -97,11 +97,11 @@ public interface Parser<T, R> {
             : Either.success(Optional.empty());
   }
 
-  static <T> Parser<T, T> predicate(Predicate<T> predicate, String message) {
+  static <T> Parser<T, T> predicate(Predicate<T> predicate, String failureMessage) {
     return input ->
         predicate.test(input)
             ? Either.success(input)
-            : Either.failure(ParseFailure.message(message));
+            : Either.failure(ParseFailure.message(failureMessage));
   }
 
   // combinators

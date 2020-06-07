@@ -33,6 +33,18 @@ public abstract class Either<T, F> {
         });
   }
 
+  public T unsafeAssumeSuccess() throws IllegalStateException {
+    return match(Function.identity(), $ -> {
+      throw new IllegalStateException("Expected success from " + this);
+    });
+  }
+
+  public F unsafeAssumeFailure() throws IllegalStateException {
+    return match($ -> {
+      throw new IllegalStateException("Expected failure from " + this);
+    }, Function.identity());
+  }
+
   // structural
 
   // Functor
