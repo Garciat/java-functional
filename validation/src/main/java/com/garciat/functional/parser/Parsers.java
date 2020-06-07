@@ -3,6 +3,7 @@ package com.garciat.functional.parser;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Currency;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -34,6 +35,10 @@ public final class Parsers {
 
   public static Parser<String, ZoneId> zoneId() {
     return Parser.lift(ZoneId::of);
+  }
+
+  public static Parser<String, Locale> languageTag() {
+    return Parser.lift(tag -> new Locale.Builder().setLanguageTag(tag).build());
   }
 
   public static <T extends Number> Parser<T, T> positive() {
