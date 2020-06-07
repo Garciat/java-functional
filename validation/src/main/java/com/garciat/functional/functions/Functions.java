@@ -23,6 +23,10 @@ public final class Functions {
     public static <A, B, C, D, R> Fn4<A, B, C, D, R> curry(Fn4<A, B, C, D, R> f) {
       return f;
     }
+
+    public static <A, B, C, D, E, R> Fn5<A, B, C, D, E, R> curry(Fn5<A, B, C, D, E, R> f) {
+      return f;
+    }
   }
 
   public static final class Reversed {
@@ -43,6 +47,10 @@ public final class Functions {
 
     public static <A, B, C, D, R> Fn4<D, C, B, A, R> reversed(Fn4<A, B, C, D, R> f) {
       return f.rev4();
+    }
+
+    public static <A, B, C, D, E, R> Fn5<E, D, C, B, A, R> reversed(Fn5<A, B, C, D, E, R> f) {
+      return f.rev5();
     }
   }
 }
