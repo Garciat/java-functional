@@ -9,4 +9,4 @@ script:
   - ./gradlew check
   - ./gradlew codeCoverageReport
 after_success:
-  - codecov
+  - bash <(curl -s https://codecov.io/bash)
