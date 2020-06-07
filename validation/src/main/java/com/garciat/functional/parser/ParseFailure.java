@@ -138,7 +138,8 @@ public abstract class ParseFailure {
   @Value
   @EqualsAndHashCode(callSuper=false)
   public static class Merge extends ParseFailure {
-    ParseFailure left, right;
+    ParseFailure left;
+    ParseFailure right;
 
     @Override
     public String toString() {
