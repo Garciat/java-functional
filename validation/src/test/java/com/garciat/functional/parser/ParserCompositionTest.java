@@ -2,11 +2,10 @@ package com.garciat.functional.parser;
 
 import com.garciat.functional.data.Either;
 import com.garciat.functional.functions.Functions;
-import junit.framework.TestCase;
 import lombok.Value;
 import lombok.val;
 import org.jetbrains.annotations.Nullable;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.Currency;
@@ -15,8 +14,9 @@ import java.util.UUID;
 
 import static com.garciat.functional.functions.Functions.Curry.curry;
 import static com.garciat.functional.functions.Functions.Reversed.reversed;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ParserCompositionTest extends TestCase {
+public class ParserCompositionTest {
 
   Parser<String, UUID> uuidParser = Parser.lift(UUID::fromString);
   Parser<String, Instant> instantParser = Parser.lift(Instant::parse);
