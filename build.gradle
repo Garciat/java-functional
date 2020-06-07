@@ -1,5 +1,6 @@
 allprojects {
     apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'maven-publish'
     apply plugin: 'jacoco'
 
@@ -9,6 +10,10 @@ allprojects {
     repositories {
         mavenLocal()
         mavenCentral()
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }
 
@@ -24,14 +29,10 @@ task codeCoverageReport(type: JacocoReport) {
     }
 
     reports {
-        xml.enabled true
-        html.enabled false
-        csv.enabled false
-    }
+        xml.enabled = true
+        xml.destination = new File("${buildDir}/reports/jacoco/report.xml")
 
-    dependencies {
-        subprojects {
-            test
-        }
+        html.enabled = true
+        html.destination = new File("${buildDir}/reports/jacoco/report.html")
     }
 }
