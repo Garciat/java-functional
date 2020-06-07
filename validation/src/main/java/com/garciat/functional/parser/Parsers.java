@@ -18,7 +18,7 @@ public final class Parsers {
   }
 
   public static <T> Parser<Optional<T>, T> defaulting(Supplier<T> fallback) {
-    return Parsers.<T>nonEmpty().recoverWith(Parser.returning(fallback));
+    return Parser.liftPure(t -> t.orElseGet(fallback));
   }
 
   public static Parser<String, UUID> uuid() {
