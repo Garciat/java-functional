@@ -29,8 +29,10 @@ task codeCoverageReport(type: JacocoReport) {
         html.enabled false
         csv.enabled false
     }
-}
 
-codeCoverageReport.dependsOn {
-    subprojects*.test
+    dependencies {
+        subprojects {
+            test
+        }
+    }
 }
