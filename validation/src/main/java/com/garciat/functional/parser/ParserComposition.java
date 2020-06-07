@@ -8,7 +8,9 @@ public abstract class ParserComposition<T, R, F> {
 
   public final Parser<T, R> build(F f) {
     return Parser.<T>id()
-        .flatMap(t -> build().map(cont -> cont.apply(f)).tagged(t.getClass().getSimpleName()));
+            .flatMap(t -> build()
+                    .map(cont -> cont.apply(f))
+                    .mapFailure(x -> ParseFailure.type(t.getClass(), x)));
   }
 
   protected abstract Parser<T, Function<F, R>> build();
