@@ -41,6 +41,12 @@ public final class Parsers {
     return Parser.lift(tag -> new Locale.Builder().setLanguageTag(tag).build());
   }
 
+  public static Parser<String, String> untilChar(char c) {
+    return Parser.<String>id()
+            .map(s -> s.split(String.valueOf(c), 2))
+            .map(parts -> parts[0]);
+  }
+
   public static <T extends Number> Parser<T, T> positive() {
     return Parser.predicate(x -> x.longValue() > 0, "value is negative");
   }
