@@ -4,4 +4,4 @@
 
 ## Alternatives
 
- - https://github.com/csierra/java-functional-applicative-validation
+ - https://github.com/csierra/funjava
