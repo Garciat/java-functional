@@ -11,105 +11,105 @@ import java.util.function.Supplier;
 
 public interface Parser<T, R> {
 
-  Either<R, ParseFailure> parse(T input);
+    // Category (identity)
+    static <T> Parser<T, T> id() {
+        return input -> Either.success(input);
+    }
 
-  // structural
+    // structural
 
-  // Functor
-  default <S> Parser<T, S> map(Function<R, S> mapper) {
-    return andThen(lift(mapper));
-  }
+    // Applicative (pure)
+    static <T, R> Parser<T, R> returning(R r) {
+        return input -> Either.success(r);
+    }
 
-  default Parser<T, R> mapFailure(Function<ParseFailure, ParseFailure> mapper) {
-    return input -> parse(input).mapFailure(mapper);
-  }
+    static <T, R> Parser<T, R> returning(Supplier<R> r) {
+        return input -> Either.success(r.get());
+    }
 
-  // Applicative
-  default <S> Parser<T, S> applyTo(Parser<T, Function<R, S>> next) {
-    return merge(this, next, (r, rs) -> rs.apply(r));
-  }
+    static <T, R> Parser<T, R> fail() {
+        return fail(ParseFailure.message("fail"));
+    }
 
-  // Alternative
-  default Parser<T, R> recoverWith(Parser<T, R> fallback) {
-    return input -> parse(input).match(Either::success, $ -> fallback.parse(input));
-  }
+    static <T, R> Parser<T, R> fail(ParseFailure failure) {
+        return input -> Either.failure(failure);
+    }
 
-  // Monad (bind)
-  default <S> Parser<T, S> flatMap(Function<R, Parser<T, S>> callback) {
-    return input -> parse(input).flatMap(t -> callback.apply(t).parse(input));
-  }
+    static <T, R> Parser<T, R> lift(Function<T, R> function) {
+        return input -> Either.lift(function).apply(input).mapFailure(ParseFailure::exception);
+    }
 
-  // Category (composition)
-  default <S> Parser<T, S> andThen(Parser<R, S> next) {
-    return input -> parse(input).flatMap(next::parse);
-  }
+    static <T, R> Parser<T, Optional<R>> liftNullable(NullableFunction<T, R> function) {
+        return input -> Either.liftNullable(function).apply(input).mapFailure(ParseFailure::exception);
+    }
 
-  // semantic
+    // semantic
 
-  default Parser<T, R> filter(Predicate<R> predicate, String failureMessage) {
-    return andThen(predicate(predicate, failureMessage));
-  }
+    static <T, R> Parser<T, R> liftPure(Function<T, R> function) {
+        return input -> Either.success(function.apply(input));
+    }
 
-  default Parser<T, R> tagged(String tag) {
-    return mapFailure(f -> ParseFailure.tag(tag, f));
-  }
+    static <T, R> Parser<Optional<T>, Optional<R>> liftOptional(Parser<T, R> parser) {
+        return input ->
+                input.isPresent()
+                        ? parser.parse(input.get()).map(Optional::of)
+                        : Either.success(Optional.empty());
+    }
 
-  // constructors
+    // constructors
 
-  // Category (identity)
-  static <T> Parser<T, T> id() {
-    return input -> Either.success(input);
-  }
+    static <T> Parser<T, T> predicate(Predicate<T> predicate, String failureMessage) {
+        return input ->
+                predicate.test(input)
+                        ? Either.success(input)
+                        : Either.failure(ParseFailure.message(failureMessage));
+    }
 
-  // Applicative (pure)
-  static <T, R> Parser<T, R> returning(R r) {
-    return input -> Either.success(r);
-  }
+    // Applicative
+    static <T, A, B, C> Parser<T, C> merge(
+            Parser<T, A> left, Parser<T, B> right, BiFunction<A, B, C> merger) {
+        return input ->
+                Either.merge(left.parse(input), right.parse(input), merger, ParseFailure::merge);
+    }
 
-  static <T, R> Parser<T, R> returning(Supplier<R> r) {
-    return input -> Either.success(r.get());
-  }
+    Either<R, ParseFailure> parse(T input);
 
-  static <T, R> Parser<T, R> fail() {
-    return fail(ParseFailure.message("fail"));
-  }
+    // Functor
+    default <S> Parser<T, S> map(Function<R, S> mapper) {
+        return andThen(lift(mapper));
+    }
 
-  static <T, R> Parser<T, R> fail(ParseFailure failure) {
-    return input -> Either.failure(failure);
-  }
+    default Parser<T, R> mapFailure(Function<ParseFailure, ParseFailure> mapper) {
+        return input -> parse(input).mapFailure(mapper);
+    }
 
-  static <T, R> Parser<T, R> lift(Function<T, R> function) {
-    return input -> Either.lift(function).apply(input).mapFailure(ParseFailure::exception);
-  }
+    // Applicative
+    default <S> Parser<T, S> applyTo(Parser<T, Function<R, S>> next) {
+        return merge(this, next, (r, rs) -> rs.apply(r));
+    }
 
-  static <T, R> Parser<T, Optional<R>> liftNullable(NullableFunction<T, R> function) {
-    return input -> Either.liftNullable(function).apply(input).mapFailure(ParseFailure::exception);
-  }
+    // Alternative
+    default Parser<T, R> recoverWith(Parser<T, R> fallback) {
+        return input -> parse(input).match(Either::success, $ -> fallback.parse(input));
+    }
 
-  static <T, R> Parser<T, R> liftPure(Function<T, R> function) {
-    return input -> Either.success(function.apply(input));
-  }
+    // Monad (bind)
+    default <S> Parser<T, S> flatMap(Function<R, Parser<T, S>> callback) {
+        return input -> parse(input).flatMap(t -> callback.apply(t).parse(input));
+    }
 
-  static <T, R> Parser<Optional<T>, Optional<R>> liftOptional(Parser<T, R> parser) {
-    return input ->
-        input.isPresent()
-            ? parser.parse(input.get()).map(Optional::of)
-            : Either.success(Optional.empty());
-  }
+    // Category (composition)
+    default <S> Parser<T, S> andThen(Parser<R, S> next) {
+        return input -> parse(input).flatMap(next::parse);
+    }
 
-  static <T> Parser<T, T> predicate(Predicate<T> predicate, String failureMessage) {
-    return input ->
-        predicate.test(input)
-            ? Either.success(input)
-            : Either.failure(ParseFailure.message(failureMessage));
-  }
+    default Parser<T, R> filter(Predicate<R> predicate, String failureMessage) {
+        return andThen(predicate(predicate, failureMessage));
+    }
 
-  // combinators
+    // combinators
 
-  // Applicative
-  static <T, A, B, C> Parser<T, C> merge(
-      Parser<T, A> left, Parser<T, B> right, BiFunction<A, B, C> merger) {
-    return input ->
-        Either.merge(left.parse(input), right.parse(input), merger, ParseFailure::merge);
-  }
+    default Parser<T, R> tagged(String tag) {
+        return mapFailure(f -> ParseFailure.tag(tag, f));
+    }
 }

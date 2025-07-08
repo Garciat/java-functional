@@ -2,8 +2,6 @@ package com.garciat.functional.parser;
 
 import com.garciat.functional.data.Either;
 import com.garciat.functional.functions.Functions;
-import lombok.Value;
-import lombok.val;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -18,63 +16,60 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ParserCompositionTest {
 
-  Parser<String, UUID> uuidParser = Parser.lift(UUID::fromString);
-  Parser<String, Instant> instantParser = Parser.lift(Instant::parse);
-  Parser<String, Currency> currencyParser = Parser.lift(Currency::getInstance);
+    Parser<String, UUID> uuidParser = Parser.lift(UUID::fromString);
+    Parser<String, Instant> instantParser = Parser.lift(Instant::parse);
+    Parser<String, Currency> currencyParser = Parser.lift(Currency::getInstance);
 
-  Parser<ThriftNested, ProperNested> nestedParser =
-          ParserComposition.of(ThriftNested.class, ProperNested.class)
-                  .with(Fields.required(ThriftNested::getName, Parser.id()))
-                  .build(reversed(curry(ProperNested::new)));
+    Parser<ThriftNested, ProperNested> nestedParser =
+            ParserComposition.of(ThriftNested.class, ProperNested.class)
+                    .with(Fields.required(ThriftNested::name, Parser.id()))
+                    .build(reversed(curry(ProperNested::new)));
 
-  Parser<ThriftThing, ProperThing> thingParser =
-          ParserComposition.of(ThriftThing.class, ProperThing.class)
-                  .with(Fields.required(ThriftThing::getUuid, uuidParser))
-                  .with(Fields.required(ThriftThing::getTimestamp, instantParser))
-                  .with(Fields.optional(ThriftThing::getCurrencyCode, currencyParser))
-                  .with(Fields.required(ThriftThing::getNested, nestedParser))
-                  .build(Functions.Reversed.reversed(Functions.Curry.curry(ProperThing::new)));
+    Parser<ThriftThing, ProperThing> thingParser =
+            ParserComposition.of(ThriftThing.class, ProperThing.class)
+                    .with(Fields.required(ThriftThing::uuid, uuidParser))
+                    .with(Fields.required(ThriftThing::timestamp, instantParser))
+                    .with(Fields.optional(ThriftThing::currencyCode, currencyParser))
+                    .with(Fields.required(ThriftThing::nested, nestedParser))
+                    .build(Functions.Reversed.reversed(Functions.Curry.curry(ProperThing::new)));
 
-  @Test
-  public void good() {
-    val input =
-            new ThriftThing("1-1-1-1-1", "2020-05-20T10:23:31Z", "BOB", new ThriftNested("hello"));
+    @Test
+    public void good() {
+        var input =
+                new ThriftThing("1-1-1-1-1", "2020-05-20T10:23:31Z", "BOB", new ThriftNested("hello"));
 
-    val result = thingParser.parse(input);
+        var result = thingParser.parse(input);
 
-    val expected =
-            Either.success(
-                    new ProperThing(
-                            UUID.fromString("00000001-0001-0001-0001-000000000001"),
-                            Instant.parse("2020-05-20T10:23:31Z"),
-                            Optional.of(Currency.getInstance("BOB")),
-                            new ProperNested("hello")));
-    assertEquals(expected, result);
-  }
+        var expected =
+                Either.success(
+                        new ProperThing(
+                                UUID.fromString("00000001-0001-0001-0001-000000000001"),
+                                Instant.parse("2020-05-20T10:23:31Z"),
+                                Optional.of(Currency.getInstance("BOB")),
+                                new ProperNested("hello")));
+        assertEquals(expected, result);
+    }
 
-  @Value
-  private static class ThriftThing {
-    @Nullable String uuid;
-    @Nullable String timestamp;
-    @Nullable String currencyCode;
-    @Nullable ThriftNested nested;
-  }
+    private record ThriftThing(
+            @Nullable String uuid,
+            @Nullable String timestamp,
+            @Nullable String currencyCode,
+            @Nullable ThriftNested nested) {
+    }
 
-  @Value
-  private static class ThriftNested {
-    @Nullable String name;
-  }
+    private record ThriftNested(@Nullable String name) {
+    }
 
-  @Value
-  private static class ProperThing {
-    UUID uuid;
-    Instant timestamp;
-    Optional<Currency> currency;
-    ProperNested nested;
-  }
+    private record ProperThing(
+            UUID uuid,
+            Instant timestamp,
+            Optional<Currency> currency,
+            ProperNested nested
+    ) {
+    }
 
-  @Value
-  private static class ProperNested {
-    String name;
-  }
+    private record ProperNested(
+            String name
+    ) {
+    }
 }
